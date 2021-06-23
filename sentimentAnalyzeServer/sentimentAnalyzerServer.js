@@ -3,10 +3,10 @@ const express = require('express');
 const app = new express();
 dotenv.config();
 
-//app.use(express.static('client'))
+app.use(express.static('client'))
 
-// const cors_app = require('cors');
-// app.use(cors_app());
+const cors_app = require('cors');
+app.use(cors_app());
 
 function getNLUInstance() {
     let api_key = process.env.API_KEY;
