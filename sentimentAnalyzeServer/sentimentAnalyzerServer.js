@@ -1,22 +1,28 @@
+const dotenv = require('dotenv');
 const express = require('express');
 const app = new express();
 dotenv.config();
+
+//app.use(express.static('client'))
+
+// const cors_app = require('cors');
+// app.use(cors_app());
 
 function getNLUInstance() {
     let api_key = process.env.API_KEY;
     let api_url = process.env.API_URL;
     
-    const NaturalLanguageUnderstandingV1=require('ibm-watson/natural-language-understanding/v1');
-    const { IamAuthenticator }=require{'ibm-watson/auth'};
+    const nLUV1=require('ibm-watson/natural-language-understanding/v1');
+    const { IamAuthenticator }=require('ibm-watson/auth');
 
-    const naturalLanguageUnderstanding = new NaturalLanguageUnderstandingV1({
+    const nLU = new nLUV1({
         version: '2020-08-01',
         authenticator: new IamAuthenticator({
             apikey: api_key,
         }),
         serviceUrl: api_url
     });
-    return naturalLanguageUnderstanding;
+    return nLU;
 }
 
 app.use(express.static('client'))
@@ -29,19 +35,71 @@ app.get("/",(req,res)=>{
   });
 
 app.get("/url/emotion", (req,res) => {
-
-    return res.send({"happy":"90","sad":"10"});
+    let params = {
+        url: req.query.url,
+        features: {
+            emotion: {
+                targets: ["people", "animals"]
+            }
+        }
+    }
+    getNLUInstance().analyze(params)
+    .then(result => {
+        return res.send(result)
+    })
+    .catch(err => {
+        console.log('error', err)
+    })
 });
 
 app.get("/url/sentiment", (req,res) => {
-    return res.send("url sentiment for "+req.query.url);
+    let params = {
+        url: req.query.url,
+        features: {
+            sentiment: {
+                targets: ["people", "animals"]
+            }
+        }
+    }
+    getNLUInstance().analyze(params)
+    .then(result => {
+        return res.send(result)
+    })
 });
 
 app.get("/text/emotion", (req,res) => {
+    let params = {
+       text: req.query.text,
+       features: {
+           emotion: {
+               targets: ["people", "animals"]
+           }
+       }
+    }
+    getNLUInstance().analyze(params)
+    .then(result => {
+        return res.send(result);
+    })
+    .catch(err => {
+        console.log('error', err)
+    })
     return res.send({"happy":"10","sad":"90"});
 });
 
 app.get("/text/sentiment", (req,res) => {
+    let params = {
+        text: req.query.text,
+        features: {
+            sentiment: {
+                targets: ["people", "animals"]
+            }
+        }
+    }
+    getNLUInstance().analyze(params)
+    .then(result => {
+        return res.send(result)
+    })
+    .catch(err => console.log("error", err))
     return res.send("text sentiment for "+req.query.text);
 });
 
